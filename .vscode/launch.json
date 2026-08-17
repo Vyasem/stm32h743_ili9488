@@ -1,0 +1,54 @@
+{
+	"inputs": [
+		{
+			"id": "gitHashAndVersion",
+			"type": "command",
+			"command": "cmake.cacheVariable",
+			"args": {
+				"name": "MCU_OUTPUT_FILENAME"
+			}
+		}
+	],
+	"configurations": [
+		{
+			"name": "MCU",
+			"type": "cortex-debug",
+			"request": "launch",
+			"cwd": "${command:cmake.launchTargetDirectory}",
+			"executable": "${command:cmake.launchTargetPath}",
+			"servertype": "jlink",
+			"device": "STM32H743VI",
+			"interface": "swd",
+			"serialNumber": "", //If you have more than one J-Link probe, add the serial number here.
+			"runToEntryPoint": "main",
+			"svdFile": "${workspaceFolder}/build/STM32H743x.svd",
+			"breakAfterReset": true,
+			"serverArgs": [
+				"-gui"
+			],
+			"preLaunchTask": "Build the active target",
+			//"rtos": "FreeRTOS",
+			"liveWatch": {
+				"enabled": true,
+				"samplesPerSecond": 4
+			},
+			"rttConfig": {
+				"enabled": true,
+				"address": "auto",
+				"decoders": [
+					{
+						"port": 0,
+						"type": "console",
+						"encoding": "unsigned",
+					}
+				]
+			},
+			"preLaunchCommands": [
+				"load ./WeactBase.hex",
+				"enable breakpoint",
+				"monitor reset"
+			]
+		}
+	],
+	"version": "2.0.0"
+}
