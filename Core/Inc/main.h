@@ -38,6 +38,8 @@ extern "C" {
 #include "stm32h7xx_ll_utils.h"
 #include "stm32h7xx_ll_pwr.h"
 #include "stm32h7xx_ll_dma.h"
+#include "stm32h7xx_ll_rtc.h"
+#include "stm32h7xx_ll_spi.h"
 #include "stm32h7xx_ll_gpio.h"
 #include "stm32h7xx_ll_hsem.h"
 
@@ -73,6 +75,8 @@ void Error_Handler(void);
 #define LED_BLUE_GPIO_Port GPIOE
 #define BTN_Pin LL_GPIO_PIN_13
 #define BTN_GPIO_Port GPIOC
+#define SDMMC1_SW_Pin LL_GPIO_PIN_4
+#define SDMMC1_SW_GPIO_Port GPIOD
 
 /* USER CODE BEGIN Private defines */
 

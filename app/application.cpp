@@ -24,6 +24,8 @@
 
 #include "application.h"
 #include "main.h"
+#include "stm32h7xx_hal.h"
+#include "sdmmc.h"
 
 //#include "freertos_utils/freertos_utils.h"
 
@@ -41,7 +43,11 @@
  */
 void Application()
 {
-	LL_GPIO_SetOutputPin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
+	if(LL_GPIO_IsInputPinSet(SDMMC1_SW_GPIO_Port, SDMMC1_SW_Pin))
+	{
+		MX_SDMMC1_SD_Init();
+		LL_GPIO_SetOutputPin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
+	}
 	while(1)
 	{}
 }

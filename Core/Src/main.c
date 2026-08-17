@@ -19,7 +19,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "rtc.h"
-#include "sdmmc.h"
 #include "spi.h"
 #include "usb_otg.h"
 #include "gpio.h"
@@ -98,7 +97,6 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  //MX_SDMMC1_SD_Init();
   MX_SPI1_Init();
   MX_USB_OTG_FS_PCD_Init();
   MX_RTC_Init();
