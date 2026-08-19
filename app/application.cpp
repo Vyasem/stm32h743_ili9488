@@ -26,8 +26,35 @@
 #include "main.h"
 #include "stm32h7xx_hal.h"
 #include "sdmmc.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "timers.h"
 
-//#include "freertos_utils/freertos_utils.h"
+
+static TimerHandle_t timerBlink;
+
+static StaticTimer_t stimerBlink;
+
+static constexpr TickType_t BLINK_TIMER_PERIOD = 500;
+
+void MainTaskFunc(void* pvParameters)
+{
+	timerBlink = xTimerCreateStatic(
+	  "blink", BLINK_TIMER_PERIOD, pdTRUE, 0,
+	  [](TimerHandle_t xTimer)
+	  {
+		  (void)xTimer;
+		  LL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
+
+	  },
+	  &stimerBlink);
+	xTimerStart(timerBlink, portMAX_DELAY);
+	if(LL_GPIO_IsInputPinSet(SDMMC1_SW_GPIO_Port, SDMMC1_SW_Pin))
+	{
+		MX_SDMMC1_SD_Init();
+	}
+	for(;;){}
+}
 
 /**
  * @brief Entry point for the application.
@@ -43,11 +70,52 @@
  */
 void Application()
 {
-	if(LL_GPIO_IsInputPinSet(SDMMC1_SW_GPIO_Port, SDMMC1_SW_Pin))
-	{
-		MX_SDMMC1_SD_Init();
-		LL_GPIO_SetOutputPin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
-	}
+	xTaskCreate(MainTaskFunc, "MainTask", 1024, NULL, 1, NULL);
+	vTaskStartScheduler();
 	while(1)
 	{}
+}
+
+extern "C" void HardFault_Handler(void)
+{
+  /* USER CODE BEGIN HardFault_IRQn 0 */
+
+  /* USER CODE END HardFault_IRQn 0 */
+  while (1)
+  {
+    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+    /* USER CODE END W1_HardFault_IRQn 0 */
+  }
+}
+
+extern "C" void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
+{
+    __BKPT(0);
+}
+
+void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, uint32_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize )
+{
+	static StaticTask_t xIdleTaskTCB;
+	static uint32_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
+
+	*ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
+	*ppxIdleTaskStackBuffer = uxIdleTaskStack;
+	*pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
+}
+
+void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, StackType_t **ppxTimerTaskStackBuffer, uint32_t *pulTimerTaskStackSize )
+{
+	/* If the buffers to be provided to the Timer task are declared inside this
+	function then they must be declared static - otherwise they will be allocated on
+	the stack and hence would not exists after this function exits. */
+	static StaticTask_t xTimerTaskTCB;
+	static StackType_t uxTimerTaskStack[ configMINIMAL_STACK_SIZE ];
+	/* Pass out a pointer to the StaticTask_t structure in which the Timer task's
+	state will be stored. */
+	*ppxTimerTaskTCBBuffer = &xTimerTaskTCB;
+	/* Pass out the array that will be used as the Timer task's stack. */
+	*ppxTimerTaskStackBuffer = uxTimerTaskStack;
+	/* Pass out the stack size of the array pointed to by *ppxTimerTaskStackBuffer.
+	Note the stack size is a count of StackType_t */
+	*pulTimerTaskStackSize = sizeof(uxTimerTaskStack) / sizeof(*uxTimerTaskStack);
 }

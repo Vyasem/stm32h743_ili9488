@@ -68,6 +68,53 @@ target_compile_definitions(stm32h7_hal PUBLIC
 #end block
 
 #freertos block
+FetchContent_Declare(
+	FreeRTOS
+	GIT_REPOSITORY https://github.com/FreeRTOS/FreeRTOS-Kernel.git
+	GIT_TAG V11.3.0
+)
+
+add_library(freertos_config INTERFACE)
+
+target_include_directories(freertos_config
+    INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/config
+)
+set(FREERTOS_HEAP "4" CACHE STRING "" FORCE)
+set(FREERTOS_PORT "GCC_ARM_CM7" CACHE STRING "" FORCE)
+FetchContent_MakeAvailable(FreeRTOS)
+
+set(FREERTOS_DIR ${freertos_SOURCE_DIR})
+file(GLOB FREERTOS_SOURCES ${FREERTOS_DIR}/*.c)
+
+set(FREERTOS_PORT_DIR ${FREERTOS_DIR}/portable/GCC/ARM_CM7/r0p1)
+list(APPEND FREERTOS_SOURCES ${FREERTOS_PORT_DIR}/port.c)
+list(APPEND FREERTOS_SOURCES ${FREERTOS_DIR}/portable/MemMang/heap_4.c)
+
+add_library(freertos_app STATIC ${FREERTOS_SOURCES})
+set_target_properties(freertos_app PROPERTIES
+	SKIP_LINTING ON
+)
+
+target_include_directories(freertos_app PUBLIC
+	${FREERTOS_DIR}/include
+	${FREERTOS_PORT_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR}/config
+)
+
+target_compile_definitions(freertos_app PRIVATE
+	projCOVERAGE_TEST=0
+)
+
+target_compile_options(freertos_app PRIVATE
+	${CMAKE_C_FLAGS}
+	-Ofast -s
+)
+
+target_compile_options(freertos_app PRIVATE
+	-Wno-pedantic
+	-Wno-unused-variable
+)
 
 #end block
 
@@ -98,6 +145,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 target_link_libraries(${PROJECT_NAME} PRIVATE
 	#littlefs
 	stm32h7_hal
+	freertos_app
 )
 
 target_link_options(${PROJECT_NAME} PRIVATE
