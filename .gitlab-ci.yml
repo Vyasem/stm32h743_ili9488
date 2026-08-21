@@ -1,0 +1,34 @@
+workflow:
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH || $CI_COMMIT_REF_NAME =~ /^release/ ||  $CI_COMMIT_REF_NAME =~ /^hotfix/
+    - if: $CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == 'merge_request_event' || $CI_COMMIT_REF_NAME == "develop"
+
+stages:
+  - build
+
+build:
+  stage: build
+  image: registry.gitlab.com/embedded9963233/base-stm32h743vit6/stm32h743:arm-gnu-toolchain
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  before_script:
+    - apt-get update
+    - apt-get install -y wget
+    - wget -qO- https://github.com/Kitware/CMake/releases/download/v4.1.0/cmake-4.1.0-linux-x86_64.tar.gz | tar xz -C /opt
+    - export PATH=/opt/cmake-4.1.0-linux-x86_64/bin:$PATH
+    - cmake --version
+  script:
+    - echo "Building the project..."
+    - cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain.cmake
+    - cmake --build build --parallel  --target WeactBase
+  after_script:
+    - echo "Build completed."
+    - mkdir mcu
+    - cp build/WeactBase.hex mcu
+  artifacts:
+    untracked: false
+    when: on_success
+    expire_in: "30 days"
+    paths:
+      - mcu
