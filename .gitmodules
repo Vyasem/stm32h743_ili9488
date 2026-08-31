@@ -1,0 +1,3 @@
+[submodule "libs/ili9488"]
+	path = libs/ili9488
+	url = git@gitlab.com:libraries1003235/ili9488.git
