@@ -15,6 +15,7 @@ include(FetchContent)
 
 project(WeactBase LANGUAGES C CXX ASM)
 
+add_subdirectory(libs/ili9488)
 include(cmake/mcu.cmake)
 include(cmake/utils.cmake)
 

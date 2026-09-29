@@ -118,6 +118,16 @@ target_compile_options(freertos_app PRIVATE
 
 #end block
 
+#ili9488 block
+add_library(ili9488 STATIC
+	${CMAKE_CURRENT_SOURCE_DIR}/libs/ili9488/ili9488.cpp
+)
+
+target_include_directories(ili9488 PUBLIC
+	${CMAKE_CURRENT_SOURCE_DIR}/libs
+)
+#end block
+
 file(GLOB_RECURSE CODE_SOURCES
 	${PROJECT_SOURCE_DIR}/Core/Src/*.c
 	${PROJECT_SOURCE_DIR}/Core/Src/*.cpp
@@ -146,6 +156,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 	#littlefs
 	stm32h7_hal
 	freertos_app
+	ili9488
 )
 
 target_link_options(${PROJECT_NAME} PRIVATE
